@@ -25,20 +25,24 @@ import (
 	"os"
 )
 
-var dialAddr = flag.String("dial", "localhost:8000", "host:port to dial")
+var dialAddr = flag.String("dialAddr", "localhost:8000", "host:port to dial")
 
 type Message struct {
 	Body string
 }
 
 func main() {
-	// TODO: Parse the flags.
-
-	// TODO: Open a new connection using the value of the "dial" flag.
-	// TODO: Don't forget to check the error.
-
+	//TODO: Parse the flags.
+	flag.Parse()
+	//TODO: Open a new connection using the value of the "dial" flag.
+	c, err := net.Dial("tcp", *dialAddr)
+	//TODO: Don't forget to check the error.
+	if err != nil {
+		log.Fatal(err)
+	}
 	s := bufio.NewScanner(os.Stdin)
-	// TODO: Create a json.Encoder writing into the connection you created before.
+	//TODO: Create a json.Encoder writing into the connection you created before.
+	e := json.NewEncoder(c)
 	for s.Scan() {
 		m := Message{Body: s.Text()}
 		err := e.Encode(m)
