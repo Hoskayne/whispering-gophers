@@ -45,6 +45,7 @@ func main() {
 	flag.Parse()
 
 	// TODO: Launch dial in a new goroutine, passing in *dialAddr.
+	go dial(*dialAddr)
 
 	l, err := net.Listen("tcp", *listenAddr)
 	if err != nil {
@@ -60,7 +61,11 @@ func main() {
 }
 
 func serve(c net.Conn) {
-	defer c.Close()
+	defer func() {
+		if err := c.Close(); err != nil {
+			fmt.Printf("%#v\n", err)
+		}
+	}() //since IDE was complaining that mere `defer c.close()` didn't handle error
 	d := json.NewDecoder(c)
 	for {
 		var m Message
@@ -75,4 +80,20 @@ func serve(c net.Conn) {
 
 func dial(addr string) {
 	// TODO: put the contents of the main function from part 2 here.
+	c, err := net.Dial("tcp", addr)
+	if err != nil {
+		fmt.Println(err)
+	}
+	s := bufio.NewScanner(os.Stdin)
+	e := json.NewEncoder(c)
+	for s.Scan() {
+		m := Message{Body: s.Text()}
+		err := e.Encode(m)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+	if err := s.Err(); err != nil {
+		fmt.Println(err)
+	}
 }
